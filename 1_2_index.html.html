@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英単語テスト</title>
+    <style>
+        /* ボディ全体の設定 */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            flex-direction: column; /* 縦に並べる */
+        }
+
+        /* 英単語の表示スタイル */
+        #word {
+            font-size: 48px; /* 英単語の文字サイズを調整 */
+            text-align: center; /* 中央揃え */
+            margin-top: 100px; /* 上部に少し余白を追加 */
+            display: block; /* ブロック要素として表示 */
+            width: 100%; /* 幅100% */
+            text-align: center; /* 横方向の中央揃え */
+            display: flex;
+            justify-content: center; /* 水平方向の中央揃え */
+            align-items: center; /* 垂直方向の中央揃え */
+            height: 200px; /* 英単語の高さを調整 */
+        }
+
+        /* ボタンのスタイル */
+        button {
+            padding: 10px 20px;
+            margin-top: 20px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* 設定用のスライダー */
+        .slider {
+            width: 80%;
+            margin: 10px 0;
+        }
+
+        /* 設定表示 */
+        #settings {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #result {
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <div id="settings">
+        <button id="startButton">テスト開始</button>
+        <div>
+            <label for="testTimeSlider">テスト時間: <span id="testTimeDisplay">2</span>秒</label>
+            <input type="range" id="testTimeSlider" class="slider" min="1" max="10" value="2">
+        </div>
+        <div>
+            <label for="intervalSlider">訳表示時間: <span id="intervalDisplay">2</span>秒</label>
+            <input type="range" id="intervalSlider" class="slider" min="1" max="10" value="2">
+        </div>
+        <div>
+            <label for="gapSlider">間隔時間: <span id="gapDisplay">1</span>秒</label>
+            <input type="range" id="gapSlider" class="slider" min="0" max="5" value="1">
+        </div>
+    </div>
+
+    <div id="word"></div>
+
+    <div id="result">
+        <button id="correctButton" style="display:none;">できた</button>
+        <button id="incorrectButton" style="display:none;">できなかった</button>
+    </div>
+
+    <script>
+        const words = [
+            { word: "follow", translation: "～の後に続く、～に従う" },
+            { word: "consider", translation: "～を考慮する" },
+            { word: "increase", translation: "増える、～を増やす" },
+            { word: "expect", translation: "～を予期する" },
+            { word: "decide", translation: "～することを決意する" },
+            { word: "develop", translation: "発達する、～を発達させる" },
+            { word: "provide", translation: "～を供給する、与える" },
+            { word: "continue", translation: "続く、～を続ける" },
+            { word: "include", translation: "～を含む、含める" },
+            { word: "remain", translation: "ままでいる" }
+        ];
+
+        let testTime = 2;  // テスト時間（秒）
+        let intervalTime = 2;  // 訳表示時間（秒）
+        let gapTime = 1;  // 間隔時間（秒）
+        let currentWordIndex = 0;
+        let correctAnswers = [];
+        let incorrectAnswers = [];
+
+        // スライダーのイベント設定
+        document.getElementById('testTimeSlider').addEventListener('input', function() {
+            testTime = this.value;
+            document.getElementById('testTimeDisplay').innerText = testTime;
+        });
+
+        document.getElementById('intervalSlider').addEventListener('input', function() {
+            intervalTime = this.value;
+            document.getElementById('intervalDisplay').innerText = intervalTime;
+        });
+
+        document.getElementById('gapSlider').addEventListener('input', function() {
+            gapTime = this.value;
+            document.getElementById('gapDisplay').innerText = gapTime;
+        });
+
+        // テスト開始ボタンの設定
+        document.getElementById('startButton').addEventListener('click', function() {
+            document.getElementById('settings').style.display = 'none';
+            startTest();
+        });
+
+        // テストの開始
+        function startTest() {
+            showWord();
+        }
+
+        // 単語を表示する関数
+        function showWord() {
+            const wordElement = document.getElementById('word');
+            wordElement.innerText = words[currentWordIndex].word;
+
+            const correctButton = document.getElementById('correctButton');
+            const incorrectButton = document.getElementById('incorrectButton');
+
+            correctButton.style.display = 'inline-block';
+            incorrectButton.style.display = 'inline-block';
+
+            // 1秒後に訳を表示し、ボタンを非表示にする
+            setTimeout(() => {
+                wordElement.innerText = words[currentWordIndex].translation;
+
+                // 訳を表示したらボタンを非表示
+                correctButton.style.display = 'none';
+                incorrectButton.style.display = 'none';
+            }, testTime * 1000);
+
+            // ボタンが表示されている間はそのままで、訳表示後にボタン非表示にする
+            setTimeout(() => {
+                currentWordIndex++;
+                if (currentWordIndex < words.length) {
+                    setTimeout(showWord, gapTime * 1000);
+                } else {
+                    showResults();
+                }
+            }, (testTime + intervalTime) * 1000);
+
+            correctButton.addEventListener('click', function() {
+                correctAnswers.push(words[currentWordIndex]);
+            });
+
+            incorrectButton.addEventListener('click', function() {
+                incorrectAnswers.push(words[currentWordIndex]);
+            });
+        }
+
+        // 結果の表示
+        function showResults() {
+            const resultElement = document.getElementById('result');
+            resultElement.innerHTML = `
+                <h3>できた単語</h3>
+                <ul>
+                    ${correctAnswers.map(word => `<li>${word.word}</li>`).join('')}
+                </ul>
+                <h3>できなかった単語</h3>
+                <ul>
+                    ${incorrectAnswers.map(word => `<li>${word.word}</li>`).join('')}
+                </ul>
+            `;
+        }
+    </script>
+</body>
+</html>
